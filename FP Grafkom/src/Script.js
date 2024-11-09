@@ -52,8 +52,9 @@ export default class Scene {
 
             let size = 3000;
             this.setupGround(size);
+            this.setupPedestrianPath();
             this.loadBuildingModel();
-            this.loadEiffelModel();
+            this.loadBushModel();
 
             const fbxLoader = new FBXLoader();
             fbxLoader.load("asset/Sad Idle.fbx", (model) => {
@@ -104,7 +105,7 @@ export default class Scene {
     }
 
     setupGround(size) {
-        const groundTexture = new THREE.TextureLoader().load("/texture/polyesterene.jpg");
+        const groundTexture = new THREE.TextureLoader().load("/texture/OIP (20).jpeg");
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
         let tSize = size * 0.09;
@@ -124,63 +125,202 @@ export default class Scene {
         const gltfLoader = new GLTFLoader();
         gltfLoader.load('asset/pisa_tower.glb', (gltf) => {
             const building = gltf.scene;
-
-            building.position.set(50, 0, 50);
-            building.scale.set(5, 5, 5); // Sesuaikan skala
-
-            // Coba terapkan material jika model terlihat terlalu datar
+    
+            building.position.set(0, 0, 0);
+            building.scale.set(7, 7, 7);
+    
             building.traverse((node) => {
                 if (node.isMesh) {
                     node.material = new THREE.MeshStandardMaterial({
-                        color: 0xffffff, 
-                        metalness: 0.3,  
-                        roughness: 0.7,  
-                        
+                        color: 0xffffff,
+                        metalness: 0.3,
+                        roughness: 0.7,
                     });
-
-                    node.castShadow = true; 
-                    node.receiveShadow = true; 
+    
+                    node.castShadow = true;
+                    node.receiveShadow = true;
                 }
             });
-
+    
             this.scene.add(building);
             console.log('Bangunan Pisa Tower ditambahkan ke scene');
+    
+            // Menambahkan alas persegi di posisi (0, 0, 0)
+            this.addSquareBase();
         }, undefined, (error) => {
             console.error('Gagal memuat model bangunan:', error);
         });
     }
-
-
-    loadEiffelModel() {
+    
+    addSquareBase() {
+        const baseSize = 750;
+        const baseThickness = 0.1;
+    
+        const baseTexture = new THREE.TextureLoader().load("/texture/OIP.jpeg");
+        baseTexture.wrapS = THREE.RepeatWrapping;
+        baseTexture.wrapT = THREE.RepeatWrapping;
+        
+        // Mengatur repeat yang lebih tinggi agar tekstur lebih kecil
+        baseTexture.repeat.set(75, 75);
+    
+        const baseMaterial = new THREE.MeshStandardMaterial({
+            map: baseTexture,
+            roughness: 0.6,
+            metalness: 0.2,
+            side: THREE.FrontSide,
+        });
+    
+        const squareBase = new THREE.Mesh(
+            new THREE.BoxGeometry(baseSize, baseThickness, baseSize),
+            baseMaterial
+        );
+    
+        squareBase.position.set(0, baseThickness / 2 + 1, 0);
+        squareBase.receiveShadow = true;
+        squareBase.castShadow = true;
+    
+        this.scene.add(squareBase);
+        console.log('Alas persegi ditambahkan dengan pengaturan tekstur yang diperbaiki');
+    }
+    
+    setupPedestrianPath() {
+        const groundSize = 3000;
+        const pathWidth = 100;
+        const pathThickness = 0.5;
+        const tileLength = 100;
+    
+        const pathTexture = new THREE.TextureLoader().load("/texture/OIP.jpeg");
+        pathTexture.wrapS = THREE.RepeatWrapping;
+        pathTexture.wrapT = THREE.RepeatWrapping;
+        
+        // Mengatur repeat yang lebih tinggi untuk memperkecil tampilan tekstur
+        pathTexture.repeat.set(10, 10);
+    
+        this.pathMaterial = new THREE.MeshStandardMaterial({
+            map: pathTexture,
+            roughness: 0.6,
+            metalness: 0.2,
+            side: THREE.FrontSide,
+        });
+    
+        const numSegments = groundSize / tileLength;
+        for (let i = 0; i < numSegments; i++) {
+            const pedestrianTile = new THREE.Mesh(
+                new THREE.BoxGeometry(pathWidth, pathThickness, tileLength),
+                this.pathMaterial
+            );
+    
+            const zPosition = -groundSize / 2 + i * tileLength + tileLength / 2;
+            pedestrianTile.position.set(0, pathThickness / 2, zPosition);
+            pedestrianTile.receiveShadow = false;
+            pedestrianTile.castShadow = false;
+    
+            this.scene.add(pedestrianTile);
+        }
+    
+        console.log('Jalan pejalan kaki dibuat dengan segmen kecil dan pengaturan tekstur yang diperbaiki');
+    }
+    
+    loadBushModel() {
         const gltfLoader = new GLTFLoader();
-        gltfLoader.load('asset/eiffel_tower.glb', (gltf) => {
-            const building = gltf.scene;
-
-            building.position.set(250, 0, 250);
-            building.scale.set(5, 5, 5); // Sesuaikan skala
-
-            // Coba terapkan material jika model terlihat terlalu datar
-            building.traverse((node) => {
+        gltfLoader.load('asset/bush.glb', (gltf) => {
+            this.bushModel = gltf.scene;
+            this.bushModel.scale.set(3, 3, 3); // Atur skala semak sesuai kebutuhan
+            this.bushModel.traverse((node) => {
                 if (node.isMesh) {
-                    node.material = new THREE.MeshStandardMaterial({
-                        color: 0xffffff, 
-                        metalness: 0.3,  
-                        roughness: 0.7,  
-                        
-                    });
-
-                    node.castShadow = true; 
-                    node.receiveShadow = true; 
+                    node.castShadow = true;
+                    node.receiveShadow = true;
                 }
             });
-
-            this.scene.add(building);
-            console.log('Bangunan Pisa Tower ditambahkan ke scene');
+    
+            // Panggil fungsi untuk menambahkan semak setelah model selesai dimuat
+            this.addBushes();
+            console.log('Model semak berhasil dimuat dan ditambahkan');
         }, undefined, (error) => {
-            console.error('Gagal memuat model bangunan:', error);
+            console.error('Gagal memuat model semak:', error);
         });
     }
-
+    
+    addBushes() {
+        const groundSize = 3000;
+        const pathWidth = 160;
+        const baseSize = 750;
+        const bushSpacing = 10;
+        const bushOffset = 20; // Jarak aman dari tepi
+        const bushScale = 0.2;
+    
+        // Fungsi untuk mengecek apakah posisi berada dalam zona eksklusi
+        const isExcludedZone = (x, z) => {
+            const isNearPath = Math.abs(x) < pathWidth / 2 + bushOffset;
+            const isNearSquareBaseX = Math.abs(x) < baseSize / 2 + bushOffset;
+            const isNearSquareBaseZ = Math.abs(z) < baseSize / 2 + bushOffset;
+            const isAvoidPoint = x > -75 && x < 75; // Hindari titik di antara x = -75 hingga x = 75
+            return isNearPath || (isNearSquareBaseX && isNearSquareBaseZ) || isAvoidPoint;
+        };
+    
+        // Tambahkan semak di sepanjang tepi kiri jalan
+        for (let z = -groundSize / 2; z <= groundSize / 2; z += bushSpacing) {
+            const xLeft = -pathWidth / 2 - bushOffset;
+            if (!isExcludedZone(xLeft, z)) {
+                const bushLeft = this.bushModel.clone();
+                bushLeft.scale.set(bushScale, bushScale, bushScale);
+                bushLeft.position.set(xLeft, 1, z);
+                bushLeft.rotation.y = Math.PI / 2;
+                this.scene.add(bushLeft);
+            }
+        }
+    
+        // Tambahkan semak di sepanjang tepi kanan jalan
+        for (let z = -groundSize / 2; z <= groundSize / 2; z += bushSpacing) {
+            const xRight = pathWidth / 2 + bushOffset;
+            if (!isExcludedZone(xRight, z)) {
+                const bushRight = this.bushModel.clone();
+                bushRight.scale.set(bushScale, bushScale, bushScale);
+                bushRight.position.set(xRight, 1, z);
+                bushRight.rotation.y = Math.PI / 2;
+                this.scene.add(bushRight);
+            }
+        }
+    
+        // Tambahkan semak di sekitar tepi squareBase
+        for (let x = -baseSize / 2; x <= baseSize / 2; x += bushSpacing) {
+            // Hindari area antara x = -75 hingga x = 75
+            if (x <= -80 || x >= 75) {
+                // Tepi depan squareBase
+                const bushFront = this.bushModel.clone();
+                bushFront.scale.set(bushScale, bushScale, bushScale);
+                bushFront.position.set(x, 1, baseSize / 2 + bushOffset);
+                bushFront.rotation.y = 0;
+                this.scene.add(bushFront);
+    
+                // Tepi belakang squareBase
+                const bushBack = this.bushModel.clone();
+                bushBack.scale.set(bushScale, bushScale, bushScale);
+                bushBack.position.set(x, 1, -baseSize / 2 - bushOffset);
+                bushBack.rotation.y = 0;
+                this.scene.add(bushBack);
+            }
+        }
+    
+        for (let z = -baseSize / 2; z <= baseSize / 2; z += bushSpacing) {
+            // Tepi kiri squareBase
+            const bushLeft = this.bushModel.clone();
+            bushLeft.scale.set(bushScale, bushScale, bushScale);
+            bushLeft.position.set(-baseSize / 2 - bushOffset, 1, z);
+            bushLeft.rotation.y = Math.PI / 2;
+            this.scene.add(bushLeft);
+    
+            // Tepi kanan squareBase
+            const bushRight = this.bushModel.clone();
+            bushRight.scale.set(bushScale, bushScale, bushScale);
+            bushRight.position.set(baseSize / 2 + bushOffset, 1, z);
+            bushRight.rotation.y = Math.PI / 2;
+            this.scene.add(bushRight);
+        }
+    
+        console.log('Semak-semak berhasil ditambahkan di tepi jalan dan tepi squareBase dengan pengecualian area x antara -75 hingga 75.');
+    }
+    
     render() {
         this.OrbitControls.update();
         this.renderer.render(this.scene, this.camera);
