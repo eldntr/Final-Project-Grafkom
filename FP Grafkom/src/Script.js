@@ -7,12 +7,12 @@ import { modelScale } from 'three/webgpu';
 
 
 let cubeTexture = [
-    'map/px (2).png',
-    'map/nx (2).png',
-    'map/py (2).png',
-    'map/ny (2).png',
-    'map/pz (2).png',
-    'map/nz (2).png'
+    'map/cubemap_px.png',
+    'map/cubemap_nx.png',
+    'map/cubemap_py.png',
+    'map/cubemap_ny.png',
+    'map/cubemap_pz.png',
+    'map/cubemap_nz.png'
 ];
 
 export default class Scene {
@@ -68,7 +68,7 @@ export default class Scene {
             fbxLoader.load("asset/Sad Idle.fbx", (model) => {
                 console.log('Model loaded');
                 this.player = model;
-                model.position.set(100, 5, 100);
+                model.position.set(0, 5, 400);
 
                 let scale = 0.1;
                 model.scale.set(scale, scale, scale);
