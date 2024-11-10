@@ -3,6 +3,7 @@ import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Input from "./Input";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { modelScale } from 'three/webgpu';
 
 
 let cubeTexture = [
@@ -130,11 +131,44 @@ export default class Scene {
 
     loadBuildingModel() {
         const gltfLoader = new GLTFLoader();
-        gltfLoader.load('asset/pisa_tower.glb', (gltf) => {
+        const path = window.location.pathname;
+        let modelPath;
+        let modelScale;
+
+        if (path === "/pisa") {
+            modelPath = 'asset/pisa_tower.glb';
+            modelScale = 7;
+        } else if (path === "/eiffel") {
+            modelPath = 'asset/eiffel_tower.glb';
+            modelScale = 5;
+        } else if (path === "/colosseum") {
+            modelPath = 'asset/colloseum.glb';
+            modelScale = 5;
+        } 
+        else if (path === "/aztec") {
+            modelPath = 'asset/aztec.glb';
+            modelScale = 5;
+        } else if (path === "/greatwall") {
+            modelPath = 'asset/greatwall.glb';
+            modelScale = 5;
+        } else if (path === "/crist") {
+            modelPath = 'asset/kristus.glb';
+            modelScale = 5;
+        } else if (path === "/tajmahal") {
+            modelPath = 'asset/tajmahal.glb';
+            modelScale = 5;
+        } 
+        else {
+            console.warn('Path tidak dikenal, memuat model default');
+            modelPath = 'asset/pisa_tower.glb'; 
+            modelScale = 10;
+        }
+
+        gltfLoader.load(modelPath, (gltf) => {
             const building = gltf.scene;
 
             building.position.set(0, 0, 0);
-            building.scale.set(7, 7, 7);
+            building.scale.set(modelScale, modelScale, modelScale);
 
             building.traverse((node) => {
                 if (node.isMesh) {
@@ -150,9 +184,6 @@ export default class Scene {
             });
 
             this.scene.add(building);
-            console.log('Bangunan Pisa Tower ditambahkan ke scene');
-
-            // Menambahkan alas persegi di posisi (0, 0, 0)
             this.addSquareBase();
         }, undefined, (error) => {
             console.error('Gagal memuat model bangunan:', error);
