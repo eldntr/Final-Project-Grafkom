@@ -67,7 +67,7 @@ export default class Scene {
             fbxLoader.load("asset/Sad Idle.fbx", (model) => {
                 console.log('Model loaded');
                 this.player = model;
-                model.position.set(80, 5, 40);
+                model.position.set(100, 5, 100);
 
                 let scale = 0.1;
                 model.scale.set(scale, scale, scale);
@@ -397,7 +397,7 @@ export default class Scene {
             const walkClip = anim.animations[0];
     
             // Membuat 50 NPC
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 5; i++) {
                 fbxLoader.load("asset/Sad Idle.fbx", (model) => {
                     console.log(`NPC ${i + 1} loaded`);
     
@@ -660,4 +660,3 @@ export default class Scene {
         }
     }
 }
-
