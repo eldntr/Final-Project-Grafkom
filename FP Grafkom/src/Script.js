@@ -134,61 +134,66 @@ export default class Scene {
         const path = window.location.pathname;
         let modelPath;
         let modelScale;
-
+    
         if (path === "/pisa") {
             modelPath = 'asset/pisa_tower.glb';
-            modelScale = 7;
+            modelScale = 6;
         } else if (path === "/eiffel") {
             modelPath = 'asset/eiffel_tower.glb';
-            modelScale = 5;
-        } else if (path === "/colosseum") {
+            modelScale = 8;
+        } else if (path === "/collosseum") {
             modelPath = 'asset/colloseum.glb';
-            modelScale = 5;
-        } 
-        else if (path === "/aztec") {
+            modelScale = 6;
+        } else if (path === "/aztec") {
             modelPath = 'asset/aztec.glb';
-            modelScale = 5;
+            modelScale = 3;
         } else if (path === "/greatwall") {
             modelPath = 'asset/greatwall.glb';
-            modelScale = 5;
+            modelScale = 10;
         } else if (path === "/crist") {
             modelPath = 'asset/kristus.glb';
-            modelScale = 5;
+            modelScale = 6;
         } else if (path === "/tajmahal") {
             modelPath = 'asset/tajmahal.glb';
-            modelScale = 5;
-        } 
-        else {
+            modelScale = 4;
+        } else {
             console.warn('Path tidak dikenal, memuat model default');
-            modelPath = 'asset/pisa_tower.glb'; 
+            modelPath = 'asset/pisa_tower.glb';
             modelScale = 10;
         }
-
+    
         gltfLoader.load(modelPath, (gltf) => {
             const building = gltf.scene;
-
+    
             building.position.set(0, 0, 0);
             building.scale.set(modelScale, modelScale, modelScale);
-
+    
+            // Traverse through each node to assign fallback color if no texture
             building.traverse((node) => {
                 if (node.isMesh) {
-                    node.material = new THREE.MeshStandardMaterial({
-                        color: 0xffffff,
-                        metalness: 0.3,
-                        roughness: 0.7,
-                    });
-
                     node.castShadow = true;
                     node.receiveShadow = true;
+    
+                    if (node.material) {
+                        if (!node.material.map) {
+                            console.warn('Tekstur tidak ditemukan untuk mesh:', node);
+                            // Apply fallback color (cream or wheat color)
+                            node.material.color.set(0xF5DEB3);  // Set wheat color (warna krem)
+                            node.material.needsUpdate = true;
+                        } else {
+                            console.log('Tekstur ditemukan untuk mesh:', node);
+                        }
+                    }
                 }
             });
-
+    
             this.scene.add(building);
             this.addSquareBase();
         }, undefined, (error) => {
             console.error('Gagal memuat model bangunan:', error);
         });
     }
+    
 
     addSquareBase() {
         const baseSize = 750;
@@ -422,46 +427,46 @@ export default class Scene {
 
     loadNPCModels() {
         const fbxLoader = new FBXLoader();
-    
+
         // Memuat model animasi berjalan
         fbxLoader.load("asset/Walking (1).fbx", (anim) => {
             const walkClip = anim.animations[0];
-    
+
             // Membuat 50 NPC
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 10; i++) {
                 fbxLoader.load("asset/Sad Idle.fbx", (model) => {
                     console.log(`NPC ${i + 1} loaded`);
-    
+
                     // Mengatur skala NPC
                     model.scale.set(0.1, 0.1, 0.1);
-    
+
                     // Mencari posisi acak yang valid
                     let position;
                     do {
                         position = this.getRandomSpawnPosition();
                     } while (this.isExcludedZone(position.x, position.z));
-    
+
                     // Mengatur posisi dan rotasi NPC
                     model.position.set(position.x, 1, position.z);
                     model.rotation.y = Math.random() * Math.PI * 2;
-    
+
                     model.traverse((node) => {
                         if (node.isMesh) {
                             node.castShadow = true;
                             node.receiveShadow = true;
                         }
                     });
-    
+
                     // Buat mixer dan animasi berjalan untuk NPC
                     const npcMixer = new THREE.AnimationMixer(model);
                     const npcWalkAction = npcMixer.clipAction(walkClip);
                     npcWalkAction.play();
-    
+
                     // Tambahkan NPC ke scene dan array
                     this.scene.add(model);
                     this.npcs.push(model);
                     this.npcMixers.push(npcMixer);
-    
+
                     // Set target awal untuk setiap NPC
                     model.npcTarget = this.chooseRandomTarget();
                 }, undefined, (error) => {
@@ -472,31 +477,31 @@ export default class Scene {
             console.error('Error loading walk animation:', error);
         });
     }
-    
+
     getRandomSpawnPosition() {
         const minX = -350;
         const maxX = 350;
         const minZ = -700;
         const maxZ = 700;
-    
+
         const randomX = Math.random() * (maxX - minX) + minX;
         const randomZ = Math.random() * (maxZ - minZ) + minZ;
-    
+
         return { x: randomX, z: randomZ };
     }
-    
+
     isExcludedZone(x, z) {
         const pathWidth = 200;
         const baseSize = 750;
         const bushOffset = 100;
-    
+
         const isNearPath = Math.abs(x) < pathWidth / 2 + bushOffset;
         const isNearSquareBaseX = Math.abs(x) < baseSize / 2 + bushOffset;
         const isNearSquareBaseZ = Math.abs(z) < baseSize / 2 + bushOffset;
         const isAvoidPoint = x > -75 && x < 75;
-    
+
         return isNearPath || (isNearSquareBaseX && isNearSquareBaseZ) || isAvoidPoint;
-    }    
+    }
 
     createNPCPath() {
         this.npcPath = [
@@ -510,21 +515,21 @@ export default class Scene {
     updateNPCs(delta) {
         this.npcs.forEach((npc, index) => {
             const mixer = this.npcMixers[index];
-    
+
             // Update animasi NPC
             mixer.update(delta);
-    
+
             const speed = 30 * delta;
             const currentPos = npc.position;
             const targetPos = npc.npcTarget;
-    
+
             // Hitung vektor arah menuju target
             const direction = new THREE.Vector3(targetPos.x - currentPos.x, 0, targetPos.z - currentPos.z);
             const distance = direction.length();
-    
+
             // Normalisasi vektor arah dan kalikan dengan kecepatan
             direction.normalize().multiplyScalar(speed);
-    
+
             // Jika jarak ke target lebih kecil dari kecepatan, pilih target baru
             if (distance < speed) {
                 npc.npcTarget = this.chooseRandomTarget();
@@ -541,12 +546,12 @@ export default class Scene {
         const maxX = 200;
         const minZ = -350;
         const maxZ = 350;
-    
+
         const randomX = Math.random() * (maxX - minX) + minX;
         const randomZ = Math.random() * (maxZ - minZ) + minZ;
-    
+
         return new THREE.Vector3(randomX, 1, randomZ);
-    } 
+    }
 
     render() {
         this.OrbitControls.update();

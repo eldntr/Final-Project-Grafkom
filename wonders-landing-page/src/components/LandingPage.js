@@ -16,7 +16,7 @@ const wonders = [
             'In 2007, Christ the Redeemer was named one of the New Seven Wonders of the World, solidifying its status as a global icon of faith and culture.', url:"/crist"},
     {name: 'Aztec Pyramids - Teotihuacan (Mexico)', path: '/models/aztec.glb', info: 'The largest Aztec pyramid was called the Pyramid of the Sun, rising over 200 feet into the air. Aztecs believed the sun and the moon were made in their major city and worshiped both with giant pyramids. As many as 200,000 people might have lived in the city built around these pyramids.', url:"/aztec"},
     {name: 'Taj Mahal - Agra (India)', path: '/models/tajmahal.glb', info: 'The Taj changes its colour three times a day. The Taj Mahal seems pink in the morning and milky white in the evening and golden in the moonlight. In the centre of the Taj Mahal are the tombs of both Shah Jahan and Mumtaz Mahal.', url:"/tajmahal"},
-    {name: 'Colloseum - Rome (Italy)', path: '/models/colloseum.glb', info: 'At its tallest point, the Colosseum stands 157 feet high. That\'s around the same height as the Washington Monument. There are four levels to the Colosseum and in ancient Rome, over 50,000 spectators could enter through the 80 entrances. When you\'re there, look for the diagonal break down the side of the amphitheater.', url:"/colosseum"},
+    {name: 'Colloseum - Rome (Italy)', path: '/models/colloseum.glb', info: 'At its tallest point, the Colosseum stands 157 feet high. That\'s around the same height as the Washington Monument. There are four levels to the Colosseum and in ancient Rome, over 50,000 spectators could enter through the 80 entrances. When you\'re there, look for the diagonal break down the side of the amphitheater.', url:"/collosseum"},
     {name: 'Great Wall of China - Beijing (China)',path: '/models/greatwall.glb',info:'The most extensive and best-preserved version of the wall dates from the Ming dynasty (1368–1644) and runs for some 5,500 miles (8,850 km) east to west from Mount Hu near Dandong, southeastern Liaoning province, to Jiayu Pass west of Jiuquan, northwestern Gansu province', url:"/greatwall"}
 ];
 
@@ -44,7 +44,7 @@ function LandingPage() {
             <div className="button-container">
                 <button onClick={handlePrevious}>Previous</button>
                 <button onClick={toggleInfo}>Infographics</button>
-                <button onClick={() => window.open(`http://${window.location.hostname}:5137${wonders[currentWonderIndex].url}`, '_blank')}>Tour</button>
+                <button onClick={() => window.open(`http://${window.location.hostname}:5173${wonders[currentWonderIndex].url}`, '_blank')}>Tour</button>
                 <button onClick={handleNext}>Next</button>
             </div>
             {showInfo && (
